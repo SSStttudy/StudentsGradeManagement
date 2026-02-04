@@ -1,0 +1,36 @@
+# 编译生成文件
+*.exe
+*.o
+*.obj
+*.out
+*.dll
+*.so
+*.dylib
+
+# 调试文件
+*.ilk
+*.pdb
+*.idb
+*.pch
+
+# 临时文件
+*.swp
+*.swo
+*~
+*.tmp
+.DS_Store
+
+# VS Code 配置
+.vscode/
+
+# 系统文件
+Thumbs.db
+desktop.ini
+
+# 学生成绩管理系统的数据文件（可选）
+students.txt
+
+# CMake 生成文件
+CMakeFiles/
+cmake_install.cmake
+CMakeCache.txt
