@@ -1,11 +1,11 @@
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
-
-#ifdef _WIN64
-#include <windows.h>
-#endif
 
 using namespace std;
 
@@ -30,6 +30,7 @@ void searchStudent();
 void saveToFile();
 void loadFromFile();
 void clearData();
+void sortStudents(vector<Student>& students);
 int getValidInt(const string& prompt, int minVal, int maxVal); //输入验证：获取有效整数（带范围检查）
 string getNonEmptyString(const string& prompt); // 输入验证：获取非空字符串
 
@@ -47,7 +48,7 @@ int main(){
     do{
         
         showMenu();
-        choice = getValidInt("请输入您的选择(1-9): ", 1, 9);
+        choice = getValidInt("请输入您的选择(1-10): ", 1, 10);
 
         switch (choice)
         {
@@ -73,9 +74,12 @@ int main(){
             loadFromFile();
             break;
         case 8:
-            cout << "清空当前数据" <<endl;
-            break;  
+            clearData();
+            break; 
         case 9:
+            sortStudents(students);
+            break;   
+        case 10:
             cout << "退出系统" <<endl; 
             return 0; 
         default:
@@ -85,7 +89,7 @@ int main(){
         cout << "\n按回车键继续...";
         cin.ignore();
 
-    } while (choice != 9);
+    } while (choice != 10);
     
     return 0;
 };
@@ -95,7 +99,7 @@ void showMenu() {
     system("cls"); // Windows清屏，如果是Linux/Mac用 system("clear");
     
     cout << "=========================================" << endl;
-    cout << "        学生成绩管理系统 V1.1" << endl;
+    cout << "        学生成绩管理系统 V2.0" << endl;
     cout << "=========================================" << endl;
     cout << "1. 添加学生信息" << endl;
     cout << "2. 删除学生记录" << endl;
@@ -105,7 +109,8 @@ void showMenu() {
     cout << "6. 保存数据到文件" << endl;
     cout << "7. 从文件加载数据" << endl;
     cout << "8. 清空当前数据" << endl;
-    cout << "9. 退出系统" << endl;
+    cout << "9. 学生数据排序" << endl;
+    cout << "10. 退出系统" << endl;
     cout << "=========================================" << endl;
 }
 void addStudent()
@@ -261,7 +266,7 @@ void searchStudent() {
         
         for (const auto& stu : students) {
             if (stu.id == searchId) {
-                cout << "\n查找结果：" << endl;
+                cout << "\n查找结果:" << endl;
                 cout << "学号\t姓名\t成绩" << endl;
                 cout << stu.id << "\t" << stu.name << "\t" << stu.grade << endl;
                 return;
@@ -274,7 +279,7 @@ void searchStudent() {
         string searchName = getNonEmptyString("请输入要查找的姓名: ");
         
         bool found = false;
-        cout << "\n查找结果：" << endl;
+        cout << "\n查找结果:" << endl;
         cout << "学号\t姓名\t成绩" << endl;
         
         for (const auto& stu : students) {
@@ -344,6 +349,139 @@ void clearData()
 
     cout << "成功清空" << endl;
 
+}
+
+// 按学号升序
+bool compareByIdAsc(const Student& a, const Student& b) {
+    return a.id < b.id;
+}
+// 按学号降序
+bool compareByIdDesc(const Student& a, const Student& b) {
+    return a.id > b.id;
+}
+
+// 按姓名（首字母）升序
+bool compareByNameAsc(const Student& a, const Student& b) {
+    return a.name < b.name; // string默认字典序
+}
+bool compareByNameDesc(const Student& a, const Student& b) {
+    return a.name > b.name;
+}
+
+// 按成绩升序
+bool compareByScoreAsc(const Student& a, const Student& b) {
+    return a.grade < b.grade;
+}
+bool compareByScoreDesc(const Student& a, const Student& b) {
+    return a.grade > b.grade;
+}
+
+// 冒泡排序
+void bubbleSort(vector<Student>& arr, bool (*cmp)(const Student&, const Student&)) {
+    int n = arr.size();
+    for (int i = 0; i < n-1; i++) {
+        bool swapped = false;
+        for (int j = 0; j < n-i-1; j++) {
+            if (cmp(arr[j+1], arr[j])) { // 如果后一个应该在前一个前面，交换
+                swap(arr[j], arr[j+1]);
+                swapped = true;
+            }
+        }
+        if (!swapped) break;
+    }
+}
+
+// 快速排序（Lomuto分区示例）
+int partition(vector<Student>& arr, int low, int high, bool (*cmp)(const Student&, const Student&)) {
+    Student pivot = arr[high];
+    int i = low - 1;
+    for (int j = low; j < high; j++) {
+        if (cmp(arr[j], pivot)) { // 如果arr[j]应该在pivot前面
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i+1], arr[high]);
+    return i+1;
+}
+
+void quickSortHelper(vector<Student>& arr, int low, int high, bool (*cmp)(const Student&, const Student&)) {
+    if (low < high) {
+        int pi = partition(arr, low, high, cmp);
+        quickSortHelper(arr, low, pi-1, cmp);
+        quickSortHelper(arr, pi+1, high, cmp);
+    }
+}
+
+void quickSort(vector<Student>& arr, bool (*cmp)(const Student&, const Student&)) {
+    quickSortHelper(arr, 0, arr.size()-1, cmp);
+}
+
+//排序学生数据
+
+void sortStudents(vector<Student>& students) {
+    if (students.empty()) {
+        cout << "没有学生数据，无法排序！" << endl;
+        return;
+    }
+    
+    int fieldChoice, orderChoice, algoChoice;
+    cout << "===== 排序功能 =====" << endl;
+    cout << "请选择排序字段：" << endl;
+    cout << "1. 学号" << endl;
+    cout << "2. 姓名" << endl;
+    cout << "3. 成绩" << endl;
+    cout << "请输入选项(1-3):";
+    cin >> fieldChoice;
+    cin.ignore();
+
+    cout << "请选择排序顺序：" << endl;
+    cout << "1. 升序" << endl;
+    cout << "2. 降序" << endl;
+    cout << "请输入选项(1-2):";
+    cin >> orderChoice;
+    cin.ignore();
+
+    cout << "请选择排序算法:" << endl;
+    cout << "1. 冒泡排序" << endl;
+    cout << "2. 快速排序" << endl;
+    cout << "请输入选项(1-2):";
+    cin >> algoChoice;
+    cin.ignore();
+
+    // 根据选择确定比较函数
+    bool (*cmp)(const Student&, const Student&) = nullptr;
+
+    // 根据字段和顺序选择比较函数
+    if (fieldChoice == 1) { // 学号
+        cmp = (orderChoice == 1) ? compareByIdAsc : compareByIdDesc;
+    } else if (fieldChoice == 2) { // 姓名
+        cmp = (orderChoice == 1) ? compareByNameAsc : compareByNameDesc;
+    } else if (fieldChoice == 3) { // 成绩
+        cmp = (orderChoice == 1) ? compareByScoreAsc : compareByScoreDesc;
+    } else {
+        cout << "无效字段选择！" << endl;
+        return;
+    }
+
+    // 根据算法选择调用排序
+    if (algoChoice == 1) {
+        bubbleSort(students, cmp);
+        cout << "冒泡排序完成。" << endl;
+    } else if (algoChoice == 2) {
+        quickSort(students, cmp);
+        cout << "快速排序完成。" << endl;
+    } else {
+        cout << "无效算法选择！" << endl;
+        return;
+    }
+
+    // 可选的排序后显示前几条（分页）
+    cout << "排序后的前5条记录:" << endl;
+    for (int i = 0; i < min(5, (int)students.size()); i++) {
+        cout << students[i].id << "\t" << students[i].name << "\t" << students[i].grade << endl;
+    }
+    
 }
 
 int getValidInt(const string &prompt, int minVal, int maxVal){

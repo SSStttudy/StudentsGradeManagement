@@ -28,7 +28,7 @@ Thumbs.db
 desktop.ini
 
 # 学生成绩管理系统的数据文件（可选）
-students.txt
+*.txt
 
 # CMake 生成文件
 CMakeFiles/
