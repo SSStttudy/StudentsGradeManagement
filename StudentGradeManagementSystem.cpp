@@ -99,7 +99,7 @@ void showMenu() {
     system("cls"); // Windows清屏，如果是Linux/Mac用 system("clear");
     
     cout << "=========================================" << endl;
-    cout << "        学生成绩管理系统 V2.0" << endl;
+    cout << "        学生成绩管理系统 V2.1" << endl;
     cout << "=========================================" << endl;
     cout << "1. 添加学生信息" << endl;
     cout << "2. 删除学生记录" << endl;
@@ -258,7 +258,8 @@ void searchStudent() {
     
     cout << "1. 按学号查找" << endl;
     cout << "2. 按姓名查找" << endl;
-    int searchType = getValidInt("请选择查找方式(1-2): ", 1, 2);
+    cout << "3. 按成绩查找" << endl;
+    int searchType = getValidInt("请选择查找方式(1-3): ", 1, 3);
     
     if (searchType == 1) {
         // 按学号查找
@@ -274,7 +275,7 @@ void searchStudent() {
         }
         cout << "❌ 未找到学号为 " << searchId << " 的学生。" << endl;
         
-    } else {
+    } else if (searchType == 2) {
         // 按姓名查找
         string searchName = getNonEmptyString("请输入要查找的姓名: ");
         
@@ -291,6 +292,25 @@ void searchStudent() {
         
         if (!found) {
             cout << "❌ 未找到姓名包含 \"" << searchName << "\" 的学生。" << endl;
+        }
+    } else {
+        cout << "请输入查找范围(1-100)" << endl;
+        int minGrade = getValidInt("请输入最低成绩: ", 0, 100);
+        int maxGrade = getValidInt("请输入最高成绩: ", minGrade, 100);
+
+        bool found = false;
+        cout << "\n查找结果:" << endl;
+        cout << "学号\t姓名\t成绩" << endl;
+
+        for (const auto& stu : students) {
+            if (stu.grade <= maxGrade && stu.grade >= minGrade) {
+                cout << stu.id << "\t" << stu.name << "\t" << stu.grade << endl;
+                found = true;
+            }
+        }
+
+        if (!found) {
+            cout << "❌ 未找到成绩在 " << minGrade << "," << maxGrade << " 之间的学生。" << endl;
         }
     }
 }
